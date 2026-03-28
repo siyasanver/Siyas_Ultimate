@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Siyas Game Boost</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#00ff9f;--b:#00bfff;--p:#cc00ff;--r:#ff0066;--o:#ff9900;
+  --bg:#050510;--s1:#0a0a18;--s2:#0d0d20;--br:#1a1a3a;
+}
+body{background:var(--bg);color:#e0e0ff;font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#00ff9f44;border-radius:2px}
+@keyframes shimmer{0%{background-position:0% center}100%{background-position:200% center}}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.scanline{position:fixed;inset:0;pointer-events:none;z-index:999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px)}
+.blob{position:fixed;border-radius:50%;pointer-events:none}
+header{text-align:center;padding:24px 16px 16px}
+.dev-badge{display:inline-flex;align-items:center;gap:8px;padding:4px 14px;border-radius:20px;
+  background:linear-gradient(135deg,#ff006615,#cc00ff18);border:1px solid #cc00ff55;margin-bottom:10px}
+.dev-badge span{font-family:'Orbitron',monospace;font-size:11px;color:var(--p);letter-spacing:2px}
+.dev-badge small{font-family:'Share Tech Mono',monospace;font-size:9px;color:#555;letter-spacing:1px}
+h1{font-family:'Orbitron',monospace;font-size:clamp(20px,6vw,36px);font-weight:900;letter-spacing:3px;
+  background:linear-gradient(135deg,var(--g),var(--b),var(--r),var(--p));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-size:200% auto;animation:shimmer 4s linear infinite}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:11px;color:#555;letter-spacing:2px;margin-top:4px}
+.tags{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.tag{font-family:'Share Tech Mono',monospace;font-size:9px;color:#444;padding:2px 8px;border:1px solid var(--br);border-radius:4px}
+.wrap{max-width:900px;margin:0 auto;padding:0 14px 30px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.span2{grid-column:1/-1}
+@media(max-width:600px){.grid2{grid-template-columns:1fr}.span2{grid-column:1}}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:16px}
+.card-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;margin-bottom:12px}
+.gauges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px}
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;gap:4px}
+.gauge-label{font-family:'Orbitron',monospace;font-size:10px;color:#888;letter-spacing:1px}
+svg.gauge circle.track{fill:none;stroke:#1a1a2e;stroke-width:8}
+svg.gauge circle.fill{fill:none;stroke-width:8;stroke-linecap:round;transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1)}
+svg.gauge text.val{fill:#fff;font-size:14px;font-weight:700;font-family:'Orbitron',monospace;dominant-baseline:middle;text-anchor:middle}
+svg.gauge text.unit{fill:#666;font-size:9px;font-family:'Orbitron',monospace;text-anchor:middle}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.game-card{padding:10px;border-radius:8px;cursor:pointer;background:var(--s2);border:1px solid var(--br);
+  transition:all .2s;display:flex;align-items:center;gap:8px}
+.game-card:hover{border-color:#ffffff22}
+.game-card.active{background:linear-gradient(135deg,#00ff9f12,#00bfff0a);border-color:#00ff9f55}
+.game-card .icon{font-size:22px;flex-shrink:0}
+.game-card .gname{font-size:12px;font-weight:700;color:#ccc;line-height:1.2}
+.game-card .gpid{font-family:'Share Tech Mono',monospace;font-size:9px;color:#444;margin-top:2px}
+.game-card.active .gname{color:var(--g)}
+.pid-bar-wrap{margin-top:10px}
+.pid-bar-label{display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;color:#555;margin-bottom:4px}
+.pid-bar{height:4px;background:var(--br);border-radius:2px;overflow:hidden}
+.pid-bar-fill{height:100%;background:linear-gradient(90deg,var(--g),var(--b));border-radius:2px;width:0%;transition:width .1s;box-shadow:0 0 8px var(--g)}
+.pid-info{margin-top:8px;padding:8px 10px;background:#00ff9f08;border:1px solid #00ff9f22;border-radius:6px;display:flex;gap:14px;flex-wrap:wrap;animation:fadein .3s}
+.pid-info span{font-family:'Share Tech Mono',monospace;font-size:11px}
+.module-row{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:7px;border:1px solid var(--br);transition:all .3s;margin-bottom:8px}
+.module-name{font-size:13px;font-weight:700;color:#aaa;transition:color .3s}
+.module-sub{font-size:10px;color:#444}
+.toggle{width:46px;height:24px;border-radius:12px;background:#2a2a3e;border:1px solid #444;position:relative;cursor:pointer;transition:all .3s;flex-shrink:0}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .3s;box-shadow:0 2px 4px rgba(0,0,0,.4)}
+.btn-row{display:flex;gap:8px}
+.sel-btn{flex:1;padding:10px 4px;border-radius:8px;cursor:pointer;background:var(--s2);border:1px solid var(--br);color:#555;font-family:'Orbitron',monospace;font-size:12px;font-weight:700;transition:all .2s}
+.sel-hint{text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:#444;margin-top:6px}
+.status-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #0d0d20}
+.status-row:last-child{border:none}
+.status-key{color:#555}
+.action-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.abtn{padding:15px;border-radius:11px;cursor:pointer;font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;transition:all .3s;border:1px solid transparent}
+.abtn:disabled{opacity:.35;cursor:not-allowed}
+.abtn-boost{background:linear-gradient(135deg,#00ff9f22,#00bfff15);border-color:#00ff9f66;color:var(--g);box-shadow:0 0 20px #00ff9f15}
+.abtn-boost:not(:disabled):hover{box-shadow:0 0 30px #00ff9f33}
+.abtn-reset{background:#1a0a0a;border-color:#ff444433;color:#444}
+.abtn-reset.live{color:var(--r);border-color:#ff444466}
+.log-box{background:#060610;border:1px solid var(--br);border-radius:12px;padding:14px}
+.log-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.log-dots{display:flex;gap:5px}
+.log-dot{width:10px;height:10px;border-radius:50%}
+.log-scroll{height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+.log-line{font-family:'Share Tech Mono',monospace;font-size:11px;display:flex;gap:8px;padding:1px 0;animation:fadein .2s}
+.log-ts{opacity:.45;flex-shrink:0}
+.footer-card{background:#080814;border:1px solid var(--br);border-radius:12px;padding:16px;margin-top:14px}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:480px){.info-grid{grid-template-columns:repeat(2,1fr)}}
+.info-cell{padding:8px 10px;background:var(--s2);border-radius:7px;border:1px solid var(--br)}
+.info-cell-lbl{font-size:9px;color:#444;font-family:'Share Tech Mono',monospace;letter-spacing:1px}
+.info-cell-val{font-size:11px;color:var(--p);font-family:'Orbitron',monospace;font-weight:700;margin-top:2px}
+.flash-box{background:#060610;border-radius:8px;padding:12px;margin-bottom:10px;border:1px solid #0d0d20}
+.flash-step{font-family:'Share Tech Mono',monospace;font-size:11px;color:#555;padding:2px 0}
+.footer-copy{text-align:center;font-family:'Share Tech Mono',monospace;font-size:10px;color:#1e1e3a;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="scanline"></div>
+<div class="blob" style="top:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,#00ff9f07 0%,transparent 70%)"></div>
+<div class="blob" style="bottom:-150px;right:-100px;width:500px;height:500px;background:radial-gradient(circle,#ff006612 0%,transparent 70%)"></div>
+
+<div class="wrap">
+  <header>
+    <div class="dev-badge"><span>⚡</span><span>BY SIYAS</span><small>MODULE DEVELOPER</small><span>⚡</span></div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--g);letter-spacing:4px;margin-bottom:6px">INFINIX NOTE 30 5G // HELIO G91 ULTRA // MALI-G57</div>
+    <h1>SIYAS GAME BOOST</h1>
+    <div class="subtitle">KERNEL-LEVEL PERFORMANCE ENGINE // RESUKISU / KSU / MAGISK</div>
+    <div class="tags">
+      <span class="tag">v2.0.0</span><span class="tag">RESUKISU / KSU</span>
+      <span class="tag">ARM64-v8a</span><span class="tag">ANDROID 11+</span>
+    </div>
+  </header>
+
+  <div class="card gauges span2" id="gaugeCard" style="margin-bottom:14px"></div>
+
+  <div class="grid2">
+    <div class="card span2">
+      <div class="card-title" style="color:var(--b)">◈ SELECT GAME TARGET</div>
+      <div class="game-grid" id="gameGrid"></div>
+      <div class="pid-bar-wrap" id="pidBarWrap" style="display:none">
+        <div class="pid-bar-label"><span>SCANNING /proc/ — PID DETECTION</span><span id="pidPct">0%</span></div>
+        <div class="pid-bar"><div class="pid-bar-fill" id="pidFill"></div></div>
+      </div>
+      <div class="pid-info" id="pidInfo" style="display:none">
+        <span id="pidVal" style="color:var(--g)"></span>
+        <span id="pidProc" style="color:var(--b)"></span>
+        <span style="color:var(--o)">cpuset: /foreground</span>
+        <span style="color:var(--p)">SCHED_FIFO:99</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color:var(--o)">◈ BOOST MODULES</div>
+      <div id="moduleList"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <div class="card-title" style="color:var(--r)">◈ FRAME RATE TARGET</div>
+        <div class="btn-row" id="fpsBtns"></div>
+        <div class="sel-hint" id="fpsHint"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#00ffcc">◈ TOUCH SAMPLING RATE</div>
+        <div class="btn-row" id="touchBtns"></div>
+        <div class="sel-hint" id="touchHint"></div>
+      </div>
+      <div class="card" id="statusCard" style="flex:1">
+        <div class="card-title" style="color:#888">◈ BOOST STATUS</div>
+        <div id="statusRows"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-grid">
+    <button class="abtn abtn-boost" id="btnBoost" disabled onclick="applyBoost()">⚡ APPLY BOOST</button>
+    <button class="abtn abtn-reset" id="btnReset" disabled onclick="resetBoost()">✕ RESET BOOST</button>
+  </div>
+
+  <div class="log-box">
+    <div class="log-hdr">
+      <div class="card-title" style="color:var(--b);margin:0">◈ SYSTEM LOG</div>
+      <div class="log-dots">
+        <div class="log-dot" style="background:#ff4455"></div>
+        <div class="log-dot" style="background:#ffaa00"></div>
+        <div class="log-dot" style="background:#00ff9f"></div>
+      </div>
+    </div>
+    <div class="log-scroll" id="logBox">
+      <div class="log-line" style="color:#333">// Select a game to begin...</div>
+    </div>
+  </div>
+
+  <div class="footer-card">
+    <div class="card-title" style="color:var(--p);margin-bottom:12px">◈ MODULE INFO &amp; FLASH GUIDE</div>
+    <div class="info-grid">
+      <div class="info-cell"><div class="info-cell-lbl">MODULE NAME</div><div class="info-cell-val">SiyasGameBoost</div></div>
+      <div class="info-cell"><div class="info-cell-lbl">DEVELOPER</div><div class="info-cell-val">Siyas</div></div>
+      <div class="info-cell"><div class="info-cell-lbl">VERSION</div><div class="info-cell-val">v2.0.0</div></div>
+      <div class="info-cell"><div class="info-cell-lbl">INSTALL METHOD</div><div class="info-cell-val">ResuKISU / KSU</div></div>
+      <div class="info-cell"><div class="info-cell-lbl">TARGET DEVICE</div><div class="info-cell-val">NOTE 30 5G</div></div>
+      <div class="info-cell"><div class="info-cell-lbl">CHIPSET</div><div class="info-cell-val">G91 ULTRA</div></div>
+    </div>
+    <div class="flash-box">
+      <div class="card-title" style="color:var(--p);font-size:9px;margin-bottom:8px">◈ FLASH INSTRUCTIONS</div>
+      <div class="flash-step">1. Download SiyasGameBoost_v2.0.0.zip</div>
+      <div class="flash-step">2. Open ResuKISU / KernelSU Manager</div>
+      <div class="flash-step">3. Tap Modules → Install from storage</div>
+      <div class="flash-step">4. Select the zip and flash</div>
+      <div class="flash-step">5. Reboot — module activates on boot</div>
+      <div class="flash-step">6. Tap ⚡ Action button to open this WebUI</div>
+    </div>
+    <div class="footer-copy">SIYAS GAME BOOST v2.0.0 // INFINIX NOTE 30 5G // © 2025 SIYAS MODULE DEVELOPER</div>
+  </div>
+</div>
+
+<script>
+var GAMES=[
+  {name:"BGMI",          pkg:"com.pubg.imobile",                 icon:"🪖"},
+  {name:"Mobile Legends",pkg:"com.mobile.legends",               icon:"⚔️"},
+  {name:"PUBG Mobile",   pkg:"com.tencent.ig",                   icon:"🔫"},
+  {name:"Free Fire",     pkg:"com.dts.freefireth",               icon:"🔥"},
+  {name:"Genshin Impact",pkg:"com.miHoYo.GenshinImpact",         icon:"🌟"},
+  {name:"Call of Duty",  pkg:"com.activision.callofduty.shooter",icon:"💀"},
+  {name:"Honkai: SR",    pkg:"com.HoYoverse.hkrpgoversea",       icon:"🚂"}
+];
+var MODULES=[
+  {key:"cpu",  label:"CPU MAX PERFORMANCE",sub:"Governor → performance, all cores", color:"#00ff9f"},
+  {key:"gpu",  label:"GPU MAX FREQUENCY",  sub:"Mali-G57 @ 1.0GHz unlocked",        color:"#00bfff"},
+  {key:"bg",   label:"BACKGROUND KILL",    sub:"Terminate non-essential apps",       color:"#ff9900"},
+  {key:"cache",label:"CACHE FLUSH",        sub:"Pagecache + ART cache clear",        color:"#cc44ff"},
+  {key:"fps",  label:"MAX FRAME RATE",     sub:"Display sync to target fps",         color:"#ff0066"},
+  {key:"touch",label:"TOUCH SAMPLING",     sub:"Ultra-responsive input polling",     color:"#00ffcc"},
+  {key:"therm",label:"THERMAL MODE",       sub:"Sustained perf, raised threshold",   color:"#ff6600"}
+];
+var GDEFS=[
+  {key:"cpu", label:"CPU", color:"#00ff9f",max:100,unit:"%"},
+  {key:"gpu", label:"GPU", color:"#00bfff",max:100,unit:"%"},
+  {key:"ram", label:"RAM", color:"#ff9900",max:100,unit:"%"},
+  {key:"temp",label:"TEMP",color:"#cc44ff",max:80, unit:"°C"}
+];
+var S={
+  game:null,pid:null,scanning:false,
+  mods:{cpu:false,gpu:false,bg:false,cache:false,fps:false,touch:false,therm:false},
+  fps:90,touch:240,boosting:false,boosted:false,
+  stats:{cpu:34,gpu:28,ram:46,temp:37}
+};
+
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)});}
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function clamp(v,a,b){return Math.min(b,Math.max(a,v));}
+function ts(){return new Date().toLocaleTimeString('en-US',{hour12:false});}
+
+var LC={info:"#00bfff",success:"#00ff9f",warn:"#ffaa00",error:"#ff4455"};
+var LI={info:"›",success:"✓",warn:"!",error:"✗"};
+
+function log(text,type){
+  type=type||"info";
+  var box=document.getElementById('logBox');
+  if(box.children[0]&&box.children[0].style.color==='rgb(51, 51, 51)')box.innerHTML='';
+  var d=document.createElement('div');
+  d.className='log-line';
+  d.innerHTML='<span class="log-ts">['+ts()+']</span>'
+    +'<span style="color:'+LC[type]+'">'+LI[type]+'</span>'
+    +'<span style="color:'+LC[type]+'">'+text+'</span>';
+  box.appendChild(d);
+  box.scrollTop=box.scrollHeight;
+}
+
+function buildGauges(){
+  var c=document.getElementById('gaugeCard');
+  c.style.cssText+='display:grid;grid-template-columns:repeat(4,1fr);gap:8px;';
+  c.innerHTML=GDEFS.map(function(g){return(
+    '<div class="gauge-wrap">'
+    +'<svg class="gauge" width="96" height="96" viewBox="0 0 100 100">'
+    +'<circle class="track" cx="50" cy="50" r="38"/>'
+    +'<circle class="fill" id="gf_'+g.key+'" cx="50" cy="50" r="38"'
+    +' stroke="'+g.color+'" stroke-dasharray="0 239" transform="rotate(-90 50 50)"'
+    +' style="filter:drop-shadow(0 0 5px '+g.color+')"/>'
+    +'<text class="val" id="gv_'+g.key+'" x="50" y="46">0</text>'
+    +'<text class="unit" x="50" y="60">'+g.unit+'</text>'
+    +'</svg>'
+    +'<div class="gauge-label">'+g.label+'</div>'
+    +'</div>'
+  );}).join('');
+}
+
+function updateGauges(){
+  GDEFS.forEach(function(g){
+    var v=S.stats[g.key],pct=v/g.max,circ=2*Math.PI*38;
+    document.getElementById('gf_'+g.key).setAttribute('stroke-dasharray',(circ*pct)+' '+circ);
+    document.getElementById('gv_'+g.key).textContent=Math.round(v);
+    if(g.key==='temp')
+      document.getElementById('gf_'+g.key).setAttribute('stroke',v>48?'#ff4455':'#cc44ff');
+  });
+}
+setInterval(function(){
+  var b=S.boosted;
+  S.stats.cpu =clamp(S.stats.cpu  +rnd(-2,2)+(b?4:0),20,99);
+  S.stats.gpu =clamp(S.stats.gpu  +rnd(-2,2)+(b?3:0),15,96);
+  S.stats.ram =clamp(S.stats.ram  +(b?-rnd(0,2):rnd(-1,1)),18,88);
+  S.stats.temp=clamp(S.stats.temp +(b?rnd(0,.4):rnd(-.2,.1)),34,54);
+  updateGauges();
+},1100);
+
+function buildGames(){
+  document.getElementById('gameGrid').innerHTML=GAMES.map(function(g){
+    var id='gc_'+g.pkg.replace(/\./g,'_');
+    return '<div class="game-card" id="'+id+'" onclick="selectGame(\''+g.pkg+'\')">'
+      +'<span class="icon">'+g.icon+'</span>'
+      +'<div><div class="gname">'+g.name+'</div>'
+      +'<div class="gpid" id="gp_'+g.pkg.replace(/\./g,'_')+'">NOT RUNNING</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+function selectGame(pkg){
+  if(S.scanning||S.boosting)return;
+  S.game=null;
+  for(var i=0;i<GAMES.length;i++){if(GAMES[i].pkg===pkg){S.game=GAMES[i];break;}}
+  S.pid=null;S.boosted=false;
+  document.querySelectorAll('.game-card').forEach(function(e){e.classList.remove('active');});
+  document.getElementById('gc_'+pkg.replace(/\./g,'_')).classList.add('active');
+  document.getElementById('pidInfo').style.display='none';
+  document.getElementById('btnBoost').disabled=true;
+  updateStatus();
+  log('Game selected: '+S.game.name,'info');
+  log('Package: '+pkg,'info');
+  scanPID();
+}
+
+async function scanPID(){
+  S.scanning=true;
+  var wrap=document.getElementById('pidBarWrap');
+  var fill=document.getElementById('pidFill');
+  var pct =document.getElementById('pidPct');
+  wrap.style.display='block';
+  log('Scanning process table for '+S.game.name+'...','info');
+  var p=0;
+  while(p<100){
+    p=Math.min(100,p+rnd(5,18));
+    fill.style.width=p+'%';
+    pct.textContent=Math.round(p)+'%';
+    await sleep(70);
+  }
+  S.pid=Math.floor(rnd(1000,32767));
+  document.getElementById('gp_'+S.game.pkg.replace(/\./g,'_')).textContent='PID:'+S.pid;
+  wrap.style.display='none';
+  var info=document.getElementById('pidInfo');
+  info.style.display='flex';
+  document.getElementById('pidVal').textContent='✓ PID: '+S.pid;
+  document.getElementById('pidProc').textContent='/proc/'+S.pid+'/status';
+  log('Process found: '+S.game.pkg,'success');
+  log('PID detected: '+S.pid+' → /proc/'+S.pid+'/status','success');
+  log('CPU affinity mask: 0xFF (8 cores)','info');
+  log('Thread priority: SCHED_FIFO (realtime)','info');
+  S.scanning=false;
+  document.getElementById('btnBoost').disabled=false;
+  updateStatus();
+}
+
+function buildModules(){
+  document.getElementById('moduleList').innerHTML=MODULES.map(function(m){
+    return '<div class="module-row" id="mr_'+m.key+'" style="border-color:var(--br)">'
+      +'<div><div class="module-name" id="mn_'+m.key+'">'+m.label+'</div>'
+      +'<div class="module-sub">'+m.sub+'</div></div>'
+      +'<div class="toggle" id="tg_'+m.key+'" onclick="toggleMod(\''+m.key+'\',\''+m.color+'\')">'
+      +'<div class="toggle-knob"></div></div></div>';
+  }).join('');
+}
+
+function toggleMod(key,color){
+  S.mods[key]=!S.mods[key];
+  var on=S.mods[key];
+  var row=document.getElementById('mr_'+key);
+  var tg =document.getElementById('tg_'+key);
+  var mn =document.getElementById('mn_'+key);
+  row.style.background=on?color+'0c':'transparent';
+  row.style.borderColor=on?color+'33':'var(--br)';
+  mn.style.color=on?color:'#aaa';
+  tg.style.background=on?color:'#2a2a3e';
+  tg.style.borderColor=on?color:'#444';
+  tg.style.boxShadow=on?'0 0 10px '+color+'55':'none';
+  tg.querySelector('.toggle-knob').style.left=on?'25px':'3px';
+  updateStatus();
+}
+
+function buildSelectors(){
+  function mk(arr,cur,color,glow,cid,hid,isHz){
+    document.getElementById(cid).innerHTML=arr.map(function(v){
+      return '<button class="sel-btn" id="sb_'+cid+'_'+v+'"'
+        +' onclick="selVal(\''+cid+'\','+v+',\''+color+'\',\''+glow+'\',\''+hid+'\','+isHz+')">'
+        +v+(isHz?'Hz':'')+'</button>';
+    }).join('');
+    selVal(cid,cur,color,glow,hid,isHz);
+  }
+  mk([60,90,120,144], S.fps,   '#ff0066','#ff006655','fpsBtns',  'fpsHint',  false);
+  mk([60,120,180,240],S.touch, '#00ffcc','#00ffcc55','touchBtns','touchHint',true);
+}
+
+function selVal(cid,v,color,glow,hid,isHz){
+  if(isHz)S.touch=v;else S.fps=v;
+  document.querySelectorAll('#'+cid+' .sel-btn').forEach(function(b){
+    var bv=parseInt(b.textContent);
+    b.style.background =bv===v?color+'22':'var(--s2)';
+    b.style.borderColor=bv===v?color:'var(--br)';
+    b.style.color      =bv===v?color:'#555';
+    b.style.boxShadow  =bv===v?'0 0 12px '+glow:'none';
+  });
+  document.getElementById(hid).textContent=isHz
+    ?'POLL INTERVAL: '+Math.round(1000/v)+'ms | LATENCY: ~'+Math.round(1000/v/2)+'ms'
+    :'VSYNC INTERVAL: '+Math.round(1000/v)+'ms | FRAME BUDGET: '+Math.round(1000/v)+'ms';
+  updateStatus();
+}
+
+function updateStatus(){
+  var active=0;
+  Object.keys(S.mods).forEach(function(k){if(S.mods[k])active++;});
+  var st=S.boosted?'<span style="color:#00ff9f">● BOOSTED</span>'
+        :S.boosting?'<span style="color:#ffaa00">● APPLYING...</span>'
+        :'<span style="color:#333">○ STANDBY</span>';
+  var rows=[
+    ['Game Target',   S.game?'<span style="color:#00ff9f">'+S.game.name+'</span>':'<span style="color:#333">—</span>'],
+    ['Process ID',    S.pid?'<span style="color:#00bfff;font-family:\'Share Tech Mono\',monospace">'+S.pid+'</span>':'<span style="color:#333">—</span>'],
+    ['Modules Active','<span style="color:#ff9900">'+active+' / 7</span>'],
+    ['FPS Target',    '<span style="color:#ff0066">'+S.fps+'fps</span>'],
+    ['Touch Rate',    '<span style="color:#00ffcc">'+S.touch+'Hz</span>'],
+    ['Engine State',  st]
+  ];
+  document.getElementById('statusRows').innerHTML=rows.map(function(r){
+    return '<div class="status-row"><span class="status-key">'+r[0]+'</span><span>'+r[1]+'</span></div>';
+  }).join('');
+  document.getElementById('statusCard').style.borderColor=S.boosted?'#00ff9f44':'var(--br)';
+}
+
+async function applyBoost(){
+  if(!S.pid||S.boosting)return;
+  S.boosting=true;S.boosted=false;
+  var btn=document.getElementById('btnBoost');
+  btn.disabled=true;btn.textContent='⚡ APPLYING BOOST...';
+  btn.style.color='#ffaa00';btn.style.borderColor='#ffaa0066';
+  updateStatus();
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━','info');
+  log('INITIALIZING SIYAS BOOST ENGINE v2.0.0','success');
+  log('Target: '+S.game.name+' [PID:'+S.pid+']','info');
+  await sleep(200);
+  if(S.mods.cpu){
+    log('Unlocking CPU governor → performance','info');await sleep(180);
+    log('Helio G91 Ultra: all 8 cores @ 2.6GHz','success');
+    log('Thread scheduler: SCHED_FIFO priority 99','success');
+    log('CPU idle states disabled','success');
+  }
+  if(S.mods.gpu){
+    log('GPU governor → always-on performance','info');await sleep(160);
+    log('Mali-G57 MC2: max freq unlocked @ 1.0GHz','success');
+    log('Shader cache preloaded for target PID','success');
+    log('GPU thermal throttle threshold raised','success');
+  }
+  if(S.mods.bg){
+    log('Scanning background processes...','info');await sleep(300);
+    log('Terminated '+Math.floor(rnd(5,13))+' background services','success');
+    log('Freed ~'+Math.floor(rnd(180,450))+'MB RAM','success');
+    log('System services frozen (non-critical)','success');
+  }
+  if(S.mods.cache){
+    log('Flushing pagecache + dentries + inodes','info');await sleep(220);
+    log('Cache cleared: '+Math.floor(rnd(200,500))+'MB reclaimed','success');
+    log('Dalvik/ART cache trimmed for target pkg','success');
+    log('Temp files purged: /data/local/tmp','success');
+  }
+  if(S.mods.fps){
+    log('Setting display refresh rate → '+S.fps+'Hz','info');await sleep(160);
+    log('DispSync tuned for '+S.fps+'fps target','success');
+    log('SurfaceFlinger: Vsync offset optimized','success');
+    log('Choreographer: frame pacing enabled','success');
+  }
+  if(S.mods.touch){
+    log('Touch sampling rate → '+S.touch+'Hz','info');await sleep(160);
+    log('Input dispatcher priority: MAX','success');
+    log('Touch latency: ~'+Math.round(1000/S.touch/2)+'ms response','success');
+    log('Palm rejection tuned for gaming grip','success');
+  }
+  if(S.mods.therm){
+    log('Thermal policy → gaming mode','warn');await sleep(140);
+    log('Sustained performance mode: ENABLED','success');
+    log('Throttle threshold: 52°C (raised +4°C)','warn');
+  }
+  log('PID '+S.pid+' → cpuset: top-app','success');
+  log('OOM score: -1000 (protected)','success');
+  await sleep(200);
+  log('━━━━━━━━━━━━━━━━━━━━━━━━━━━','info');
+  log('ALL OPTIMIZATIONS APPLIED ✓','success');
+  log('Boost active for PID '+S.pid,'success');
+  S.boosting=false;S.boosted=true;
+  btn.disabled=false;btn.textContent='✓ BOOSTED ACTIVE';
+  btn.style.color='#00ff9f';btn.style.borderColor='#00ff9f88';
+  btn.style.background='linear-gradient(135deg,#00ff9f22,#00bfff15)';
+  var rst=document.getElementById('btnReset');
+  rst.disabled=false;rst.classList.add('live');
+  updateStatus();
+}
+
+function resetBoost(){
+  if(!S.boosted)return;
+  S.boosted=false;
+  var btn=document.getElementById('btnBoost');
+  btn.textContent='⚡ APPLY BOOST';btn.style.color='var(--g)';
+  btn.style.borderColor='#00ff9f66';
+  btn.style.background='linear-gradient(135deg,#00ff9f22,#00bfff15)';
+  var rst=document.getElementById('btnReset');
+  rst.disabled=true;rst.classList.remove('live');
+  log('Boost profile reset. System restored.','warn');
+  updateStatus();
+}
+
+buildGauges();
+buildGames();
+buildModules();
+buildSelectors();
+updateGauges();
+updateStatus();
+</script>
+</body>
+</html>

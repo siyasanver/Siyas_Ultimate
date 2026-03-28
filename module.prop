@@ -1,0 +1,6 @@
+id=SiyasGameBoost
+name=Siyas Game Boost
+version=v2.0.0
+versionCode=200
+author=Siyas
+description=Kernel-level game booster for Infinix Note 30 5G. CPU/GPU max, BG kill, cache flush, FPS and touch boost. WebUI on localhost:8080.

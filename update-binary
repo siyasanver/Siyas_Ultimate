@@ -1,0 +1,46 @@
+#!/sbin/sh
+# ================================================================
+#  Siyas Game Boost - update-binary
+#  This is the entry point called by the recovery / root manager.
+#
+#  How Magisk/KSU module installation works:
+#  1. The manager extracts this file and runs it with 3 args:
+#       $1 = MAGISK_VER_CODE  (or KSU version)
+#       $2 = file descriptor  for ui_print output
+#       $3 = path to the zip  being flashed
+#  2. This script sources util_functions.sh from the manager,
+#     which provides: ui_print, abort, set_perm, install_module
+#  3. install_module() auto-extracts files from the zip AND
+#     sources customize.sh if present.
+#
+#  Key rule: we do NOT set SKIPUNZIP=1 here — we let
+#  install_module() handle extraction, then customize.sh
+#  only sets permissions and prints messages.
+# ================================================================
+
+SKIPUNZIP=0   # Let the framework extract everything for us
+
+# ── Detect root manager and load its utility functions ──────
+# KernelSU / ResuKISU stores ksud at /data/adb/ksud
+# Magisk stores util_functions.sh at /data/adb/magisk/
+if [ -f /data/adb/ksud ]; then
+    KSU=true
+    # KernelSU utility functions path
+    KSU_UTIL="/data/adb/ksu/util_functions.sh"
+    [ ! -f "$KSU_UTIL" ] && KSU_UTIL="/data/adb/ksud_util_functions.sh"
+    . "$KSU_UTIL"
+elif [ -f /data/adb/magisk/util_functions.sh ]; then
+    KSU=false
+    . /data/adb/magisk/util_functions.sh
+else
+    # Last-resort: walk /data/adb/ looking for util_functions.sh
+    KSU=false
+    for _f in /data/adb/*/util_functions.sh; do
+        [ -f "$_f" ] && { . "$_f"; break; }
+    done
+fi
+
+# install_module extracts zip contents to MODPATH,
+# then sources customize.sh automatically.
+install_module
+exit 0
